@@ -32,4 +32,4 @@ RUN chmod +x initctl_faker \
 # install local inventory file
 RUN echo "[local]\nlocalhost ansible_connection=local" > /etc/ansible/hosts
 
-ENTRYPOINT ["/usr/lib/systemd/systemd"]
+ENTRYPOINT ["/lib/systemd/systemd"]
