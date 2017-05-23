@@ -1,4 +1,4 @@
-# docker-xenial-vm [![Build Status][svg-travis]][travis]
+# docker-xenial-vm [![Build Status][svg-travis]][travis] [![Docker Build][svg-docker]][docker]
 
 A lightweight Ubuntu 16.04 Xenial VM in Docker. [Based on `geerlingguy/docker-ubuntu1604-ansible`][upstream], do read
 the author's [excellent post][post] about testing Ansible across multiple operating systems.
@@ -13,6 +13,8 @@ access to the `/sys/fs/cgroup` socket:
 ```
 docker run --detach --privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro naftulikay/xenial-vm:latest
 ```
+
+The container ID will be emitted by Docker and this can be used to execute commands in the Docker container/"VM".
 
 A lot of the work to discover what was necessary for systemd to run in Docker was be provided by the
 [SELinux Man Himself, Dan Walsh][dwalsh], in [some RedHat documentation][redhat-docker-systemd].
@@ -33,7 +35,8 @@ docker exec --tty $CONTAINER_ID env TERM=xterm ansible --version
 docker exec --tty $CONTAINER_ID env TERM=xterm ansible-playbook /path/to/ansible/playbook.yml --syntax-check
 ```
 
-
+ [docker]: https://hub.docker.com/r/naftulikay/xenial-vm/
+ [svg-docker]: https://img.shields.io/docker/automated/naftulikay/xenial-vm.svg?maxAge=2592000
  [svg-travis]: https://travis-ci.org/naftulikay/docker-xenial-vm.svg?branch=develop
  [travis]: https://travis-ci.org/naftulikay/docker-xenial-vm/
  [post]: https://www.jeffgeerling.com/blog/2016/how-i-test-ansible-configuration-on-7-different-oses-docker
