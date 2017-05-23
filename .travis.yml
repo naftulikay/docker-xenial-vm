@@ -1,0 +1,28 @@
+---
+dist: trusty
+sudo: required
+
+env:
+  - image: naftulikay/xenial-vm:latest
+
+matrix:
+  fast_finish: true
+
+services:
+  - docker
+
+before_install:
+  - docker build -t ${image} ./
+
+install: true
+
+script:
+  - container_id_file=$(mktemp)
+  - docker run --detach --privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro ${image} > ${container_id_file}
+  - docker exec --tty "$(cat ${container_id_file})" env TERM=xterm echo "Hello from Docker VM."
+
+notifications:
+  email:
+    on_success: never
+    on_failure: never
+  webhooks: https://registry.hub.docker.com/u/naftulikay/xenial-vm/trigger/${DOCKERHUB_TOKEN}/

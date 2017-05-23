@@ -1,0 +1,6 @@
+.git
+.vagrant
+
+.gitignore
+.travis.yml
+README.md
