@@ -1,0 +1,6 @@
+---
+gossfile:
+  "goss.d/host.yml": {}
+  "goss.d/packages.yml": {}
+  "goss.d/services.yml": {}
+  "goss.d/time.yml": {}

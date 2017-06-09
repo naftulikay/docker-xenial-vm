@@ -1,0 +1,10 @@
+---
+package:
+  dbus:
+    installed: true
+  less:
+    installed: true
+  systemd:
+    installed: true
+  systemd-cron:
+    installed: true

@@ -4,3 +4,5 @@
 .gitignore
 .travis.yml
 README.md
+Vagrantfile
+vagrant.yml

@@ -1,0 +1,26 @@
+---
+service:
+  dbus:
+    enabled: true
+    running: true
+
+  rsyslog:
+    enabled: true
+    running: true
+
+  # these two services are started on-demand
+  systemd-hostnamed:
+    enabled: true
+    running: { or: [true, false] }
+
+  systemd-timedated:
+    enabled: true
+    running: { or: [true, false] }
+
+  systemd-timesyncd:
+    enabled: true
+    running: true
+
+  systemd-journald:
+    enabled: true
+    running: true

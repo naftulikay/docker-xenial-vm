@@ -1,0 +1,70 @@
+- name: install docker
+  hosts: all
+  become: true
+  vars:
+    vagrant_user: |-
+      {% if ansible_distribution|lower == "ubuntu" -%}
+        ubuntu
+      {%- else -%}
+        vagrant
+      {%- endif %}
+  tasks:
+    # ubuntu dependencies
+    - name: install repo key
+      apt_key:
+        id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      tags: [ubuntu]
+      when: ansible_distribution|lower == "ubuntu"
+
+    - name: install docker repository
+      apt_repository:
+        filename: docker.repo
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+        update_cache: true
+        state: present
+      tags: [ubuntu]
+      when: ansible_distribution|lower == "ubuntu"
+
+    # centos dependencies
+    - name: install docker repository
+      yum_repository:
+        name: docker
+        description: Docker CE Stable - $basearch
+        baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+        enabled: true
+        gpgcheck: true
+        gpgkey: https://download.docker.com/linux/centos/gpg
+      tags: [redhat]
+      when: ansible_distribution|lower == "centos" or ansible_distribution|lower == "redhat"
+
+    - name: be an exceptional human
+      selinux: state=enforcing policy=targeted
+      tags: [redhat]
+      when: ansible_distribution|lower == "centos" or ansible_distribution|lower == "redhat"
+
+    - name: install docker
+      package: name=docker-ce state=present
+
+    - name: ensure user is in docker group
+      user: name="{{ vagrant_user }}" append=true groups=docker
+
+    - name: ensure docker started
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: cd magic
+      blockinfile:
+        path: /home/{{ vagrant_user }}/.bashrc
+        owner: "{{ vagrant_user }}"
+        group: "{{ vagrant_user }}"
+        mode: "0750"
+        block: |
+          if [ $(history 2>/dev/null | wc -l) -eq 0 ]; then
+            # we've just shelled in; "magically" cd into the vagrant shared folder
+            cd "/vagrant"
+          fi
+        create: true

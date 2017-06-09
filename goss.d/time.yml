@@ -1,0 +1,4 @@
+---
+command:
+  'timedatectl':
+    exit-status: 0
