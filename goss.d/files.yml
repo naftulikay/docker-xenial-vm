@@ -1,0 +1,14 @@
+---
+file:
+  '/etc/machine-id':
+    exists: true
+    owner: root
+    group: root
+    filetype: file
+    contains:
+      # have no way to test that it is indeed random, but here are some attempts
+      - "!/^[0]{32}$/"
+      # when I started the container just now, this is what I got
+      - "!/^(bb9b0af0e0764d39105444c4593d8acc)$/"
+      # must match format set out at https://www.freedesktop.org/software/systemd/man/machine-id.html
+      - "/^[a-f0-9]{32}$/"

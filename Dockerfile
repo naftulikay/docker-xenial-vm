@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 MAINTAINER Naftuli Kay <me@naftuli.wtf>
 # with credits upstream: https://hub.docker.com/r/geerlingguy/docker-ubuntu1604-ansible/
 
-ENV TERM=xterm LANG=en_US.UTF-8
+ENV container=docker TERM=xterm LANG=en_US.UTF-8
 
 # install a basic system
 RUN apt-get update >/dev/null \
@@ -11,17 +11,20 @@ RUN apt-get update >/dev/null \
     # install systemd, dbus, and just about everything required to "boot" a system
     && apt-get install -y --no-install-recommends \
        python-software-properties software-properties-common apt-utils \
-       rsyslog dbus systemd systemd-cron sudo less >/dev/null \
-    # remove the getty, not gonna work
-    && rm -f /etc/systemd/system/getty.target.wants/getty\@tty1.service \
+       dbus systemd systemd-cron sudo less >/dev/null \
+    # remove the getty, remove the remount
+    && rm -f /etc/machine-id \
+             /usr/lib/systemd/system/sysinit.target.wants/systemd-firstboot.service \
+             /lib/systemd/system/local-fs.target.wants/systemd-remount-fs.service \
+             /lib/systemd/system/sysinit.target.wants/systemd-machine-id-commit.service \
+             /etc/systemd/system/getty.target.wants/getty\@tty1.service \
+    # remove container constraint for timesyncd
+    && sed -i '/ConditionVirtualization=\!container/d' /lib/systemd/system/systemd-timesyncd.service \
     # remove cpu scaling frequency changer
     && update-rc.d ondemand remove && rm -f /etc/init.d/ondemand  \
     # clean apt cache to make this step cleaner
     && rm -Rf /var/lib/apt/lists/* \
     && apt-get clean
-
-# configure rsyslog
-RUN sed -i 's/^\($ModLoad imklog\)/#\1/' /etc/rsyslog.conf
 
 # install the latest stable ansible
 RUN add-apt-repository -y ppa:ansible/ansible >/dev/null \

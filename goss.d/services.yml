@@ -4,10 +4,6 @@ service:
     enabled: true
     running: true
 
-  rsyslog:
-    enabled: true
-    running: true
-
   # these two services are started on-demand
   systemd-hostnamed:
     enabled: true

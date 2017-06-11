@@ -1,0 +1,4 @@
+---
+command:
+  'journalctl':
+    exit-status: 0
