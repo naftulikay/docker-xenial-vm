@@ -1,0 +1,7 @@
+# directories
+/.vagrant
+/roles
+
+# files
+*.retry
+/*-console.log

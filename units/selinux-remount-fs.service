@@ -1,0 +1,13 @@
+[Unit]
+# an selinux enforcing host will break a guest
+Description=SELinux Dummy Filesystem for Docker
+# if selinux is loaded on the host, run this
+ConditionSecurity=selinux
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/mount -o remount,ro /sys/fs/selinux
+
+[Install]
+WantedBy=basic.target

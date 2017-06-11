@@ -1,0 +1,4 @@
+---
+command:
+  'hostnamectl':
+    exit-status: 0

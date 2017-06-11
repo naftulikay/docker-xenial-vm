@@ -1,48 +1,54 @@
 FROM ubuntu:16.04
 MAINTAINER Naftuli Kay <me@naftuli.wtf>
-# with credits upstream: https://hub.docker.com/r/geerlingguy/docker-centos7-ansible/
+# with credits upstream: https://hub.docker.com/r/geerlingguy/docker-ubuntu1604-ansible/
 
-# install and configure systemd;
-# > [b]ut systemd starts tons of services in the container like udev, getty logins, ... I only want to run systemd,
-# > journald, [...] within the container
-# - Dan Walsh: https://developers.redhat.com/blog/2014/05/05/running-systemd-within-docker-container/
+ENV TERM=xterm LANG=en_US.UTF-8
+
+# install a basic system
 RUN apt-get update >/dev/null \
+    # install and configure minimum locales
+    && apt-get install -y language-pack-en >/dev/null \
+    # install systemd, dbus, and just about everything required to "boot" a system
     && apt-get install -y --no-install-recommends \
-       python-software-properties \
-       software-properties-common \
-       rsyslog systemd systemd-cron sudo >/dev/null \
+       python-software-properties software-properties-common apt-utils \
+       rsyslog dbus systemd systemd-cron sudo less >/dev/null \
+    # remove the getty, not gonna work
+    && rm -f /etc/systemd/system/getty.target.wants/getty\@tty1.service \
+    # remove cpu scaling frequency changer
+    && update-rc.d ondemand remove && rm -f /etc/init.d/ondemand  \
+    # clean apt cache to make this step cleaner
     && rm -Rf /var/lib/apt/lists/* \
-    && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
-    && ( cd /lib/systemd/system/sysinit.target.wants/; for i in *; do \
-      [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; \
-    done ); \
-    rm -f /lib/systemd/system/multi-user.target.wants/*; \
-    rm -f /etc/systemd/system/*.wants/*; \
-    rm -f /lib/systemd/system/local-fs.target.wants/*; \
-    rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
-    rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
-    rm -f /lib/systemd/system/basic.target.wants/*; \
-    rm -f /lib/systemd/system/anaconda.target.wants/*; \
-    apt-get clean >/dev/null
+    && apt-get clean
 
-# prevent kernel log from being loaded into rsyslog
+# configure rsyslog
 RUN sed -i 's/^\($ModLoad imklog\)/#\1/' /etc/rsyslog.conf
 
-# install ansible
+# install the latest stable ansible
 RUN add-apt-repository -y ppa:ansible/ansible >/dev/null \
   && apt-get update >/dev/null \
-  && apt-get install -y --no-install-recommends ansible >/dev/null \
+  && apt-get install -y --no-install-recommends ansible > /dev/null \
   && rm -rf /var/lib/apt/lists/* \
-  && rm -Rf /usr/share/doc && rm -Rf /usr/share/man  \
-  && apt-get clean >/dev/null
+  && apt-get clean
 
-# install a fake initctl script
-COPY initctl_faker .
-RUN chmod +x initctl_faker \
+# configure ansible
+RUN printf "[local]\nlocalhost ansible_connection=local\n" > /etc/ansible/hosts \
+  && printf "[defaults]\nretry_files_enabled=false" > /etc/ansible/ansible.cfg
+
+# fake out the init system so it'll work
+COPY bin/fake-initctl /
+RUN chmod +x /fake-initctl \
   && rm -fr /sbin/initctl \
-  && ln -s /initctl_faker /sbin/initctl
+  && ln -s /fake-initctl /sbin/initctl
 
-# install local inventory file
-RUN echo "[local]\nlocalhost ansible_connection=local" > /etc/ansible/hosts
+# our own utility for awaiting systemd "boot" in the container
+COPY bin/systemd-await-target /usr/bin/systemd-await-target
+COPY bin/wait-for-boot /usr/bin/wait-for-boot
+
+# fix broken case where selinux enforcing on host breaks guest boot; create start links arbitrarily
+COPY units/selinux-remount-fs.service /etc/systemd/system/
+RUN mkdir -p /etc/systemd/system/basic.target.wants \
+  && chmod 0644 /etc/systemd/system/selinux-remount-fs.service \
+  && ln -s /etc/systemd/system/selinux-remount-fs.service \
+    /etc/systemd/system/basic.target.wants/selinux-remount-fs.service
 
 ENTRYPOINT ["/lib/systemd/systemd"]
