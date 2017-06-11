@@ -75,8 +75,8 @@ function .main() {
 function .await-target() {
   local target="${1:-multi-user.target}"
   local i=0
-  local sleep_time=${2:-10}
-  local max_retries=${3:-15}
+  local sleep_time=${2:-5}
+  local max_retries=${3:-10}
   local iteration
 
   while ! systemctl status "$target" &>/dev/null && [ $i -lt $max_retries ]; do

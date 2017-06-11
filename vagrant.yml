@@ -9,6 +9,9 @@
         vagrant
       {%- endif %}
   tasks:
+    - name: install make
+      package: name=make state=present
+
     # ubuntu dependencies
     - name: install repo key
       apt_key:

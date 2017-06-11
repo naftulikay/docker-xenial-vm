@@ -35,6 +35,29 @@ docker exec --tty $CONTAINER_ID env TERM=xterm ansible --version
 docker exec --tty $CONTAINER_ID env TERM=xterm ansible-playbook /path/to/ansible/playbook.yml --syntax-check
 ```
 
+## Contracts
+
+This container **must** do the following:
+
+#### Targets
+
+ - :ballot_box_with_check: reach `multi-user.target` after calling `wait-for-boot` in the container, in a timely fashion (usually 5s)
+
+#### Services
+
+ - :ballot_box_with_check: enable `dbus.service`
+ - :ballot_box_with_check: enable `systemd-journald.service`
+ - :ballot_box_with_check: enable `systemd-timesyncd.service` (despite being in Docker)
+ - :ballot_box_with_check: enable `systemd-timedated.service`
+ - :ballot_box_with_check: generate `/etc/machine-id` in a pseudorandom fashion on every container boot.
+
+#### Commands
+
+ - :ballot_box_with_check: be able to interact with `hostnamectl`
+ - :ballot_box_with_check: be able to interact with `timedatectl`
+ - :ballot_box_with_check: be able to interact with `journalctl`
+
+
  [docker]: https://hub.docker.com/r/naftulikay/xenial-vm/
  [svg-docker]: https://img.shields.io/docker/automated/naftulikay/xenial-vm.svg?maxAge=2592000
  [svg-travis]: https://travis-ci.org/naftulikay/docker-xenial-vm.svg?branch=develop
