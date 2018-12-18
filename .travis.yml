@@ -1,20 +1,12 @@
 ---
 dist: trusty
-sudo: required
+sudo: false
 
-matrix:
-  fast_finish: true
-
-services:
-  - docker
-
-before_install:
-  - make build
-
-install: true
+language: python
+python: 3.6
 
 script:
-  - make test-clean
+  - make test
 
 notifications:
   email:
