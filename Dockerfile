@@ -26,17 +26,6 @@ RUN apt-get update >/dev/null \
     && rm -Rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# install the latest stable ansible
-RUN add-apt-repository -y ppa:ansible/ansible >/dev/null \
-  && apt-get update >/dev/null \
-  && apt-get install -y --no-install-recommends ansible > /dev/null \
-  && rm -rf /var/lib/apt/lists/* \
-  && apt-get clean
-
-# configure ansible
-RUN printf "[local]\nlocalhost ansible_connection=local\n" > /etc/ansible/hosts \
-  && printf "[defaults]\nretry_files_enabled=false" > /etc/ansible/ansible.cfg
-
 # fake out the init system so it'll work
 COPY bin/fake-initctl /
 RUN chmod +x /fake-initctl \
@@ -48,7 +37,7 @@ COPY bin/systemd-await-target /usr/bin/systemd-await-target
 COPY bin/wait-for-boot /usr/bin/wait-for-boot
 
 # fix broken case where selinux enforcing on host breaks guest boot; create start links arbitrarily
-COPY units/selinux-remount-fs.service /etc/systemd/system/
+COPY etc/systemd/system/selinux-remount-fs.service /etc/systemd/system/
 RUN mkdir -p /etc/systemd/system/basic.target.wants \
   && chmod 0644 /etc/systemd/system/selinux-remount-fs.service \
   && ln -s /etc/systemd/system/selinux-remount-fs.service \

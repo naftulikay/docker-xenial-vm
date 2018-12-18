@@ -1,0 +1,12 @@
+---
+version: '3'
+services:
+  xenial:
+    build: ./
+    container_name: xenial
+    image: naftulikay/xenial-vm:latest
+    # systemd straight up won't work without privileged
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    stop_grace_period: 1s

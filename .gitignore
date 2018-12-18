@@ -1,7 +1,4 @@
-# directories
+/.ansible/galaxy-roles
 /.vagrant
-/roles
 
-# files
-*.retry
-/*-console.log
+/tests/.ansible/galaxy-roles
