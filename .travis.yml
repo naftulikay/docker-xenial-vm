@@ -11,7 +11,7 @@ script:
 deploy:
   provider: script
   script: |-
-    curl -H "Content-Type: application/json" --data '{"build": true}' -X POST \
+    curl -sSL -H "Content-Type: application/json" --data '{"build": true}' -X POST \
       https://registry.hub.docker.com/u/naftulikay/xenial-vm/trigger/${DOCKERHUB_TOKEN}/
   on:
     branch: master
