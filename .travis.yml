@@ -8,8 +8,15 @@ python: 3.6
 script:
   - make test
 
+deploy:
+  provider: script
+  script: |-
+    curl -H "Content-Type: application/json" --data '{"build": true}' -X POST \
+      https://registry.hub.docker.com/u/naftulikay/xenial-vm/trigger/${DOCKERHUB_TOKEN}/
+  on:
+    branch: master
+
 notifications:
   email:
     on_success: never
     on_failure: never
-  webhooks: https://registry.hub.docker.com/u/naftulikay/xenial-vm/trigger/${DOCKERHUB_TOKEN}/
