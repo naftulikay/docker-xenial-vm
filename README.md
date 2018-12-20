@@ -9,7 +9,7 @@ Available on Docker Hub as [`naftulikay/xenial-vm`][docker].
 The image and container can be built and started like so:
 
 ```
-$ docker build -t naftulikay/xenial-vm:latest
+$ docker build -t naftulikay/xenial-vm:latest ./
 $ docker run -d --name xenial -v /sys/fs/cgroup:/sys/fs/cgroup:ro --privileged \
       naftulikay/xenial-vm:latest
 $ docker exec -it xenial wait-for-boot
