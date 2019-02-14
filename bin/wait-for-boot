@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-set -e && /usr/bin/systemd-await-target multi-user.target
+# set -e && /usr/bin/systemd-await-target multi-user.target
+
+sudo systemctl start multi-user.target
