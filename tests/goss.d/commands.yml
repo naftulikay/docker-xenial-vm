@@ -1,0 +1,9 @@
+---
+command:
+  'sudo ls':
+    exit-status: 0
+
+  'id -un':
+    exit-status: 0
+    stdout:
+      - container

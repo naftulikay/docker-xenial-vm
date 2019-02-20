@@ -10,7 +10,7 @@ RUN apt-get update >/dev/null \
     && apt-get install -y language-pack-en >/dev/null \
     # install systemd, dbus, and just about everything required to "boot" a system
     && apt-get install -y --no-install-recommends \
-       python-software-properties software-properties-common apt-utils \
+       python-software-properties software-properties-common apt-utils curl \
        dbus systemd systemd-cron sudo less >/dev/null \
     # remove the getty, remove the remount
     && rm -f /etc/machine-id \
@@ -33,14 +33,28 @@ RUN chmod +x /fake-initctl \
   && ln -s /fake-initctl /sbin/initctl
 
 # our own utility for awaiting systemd "boot" in the container
-COPY bin/systemd-await-target /usr/bin/systemd-await-target
 COPY bin/wait-for-boot /usr/bin/wait-for-boot
 
 # fix broken case where selinux enforcing on host breaks guest boot; create start links arbitrarily
 COPY etc/systemd/system/selinux-remount-fs.service /etc/systemd/system/
+
 RUN mkdir -p /etc/systemd/system/basic.target.wants \
   && chmod 0644 /etc/systemd/system/selinux-remount-fs.service \
   && ln -s /etc/systemd/system/selinux-remount-fs.service \
-    /etc/systemd/system/basic.target.wants/selinux-remount-fs.service
+    /etc/systemd/system/basic.target.wants/selinux-remount-fs.service \
+  && ln -s /lib/systemd/system/dbus.service /etc/systemd/system/basic.target.wants/dbus.service
 
-ENTRYPOINT ["/lib/systemd/systemd"]
+# add our privilege escalation utility
+RUN curl -sSL -o /usr/sbin/escalator https://github.com/naftulikay/escalator/releases/download/v1.0.1/escalator-x86_64-unknown-linux-musl && \
+  chmod 7755 /usr/sbin/escalator
+
+# create a container user to simulate shelling into an unprivileged user account by default\
+COPY --chown=root:root etc/sudoers.d/container /etc/sudoers.d/
+RUN useradd -m -s $(which bash) container && \
+  chown -R container:container /home/container && \
+  chmod 0600 /etc/sudoers.d/container
+
+USER container
+WORKDIR /home/container
+
+ENTRYPOINT ["/usr/sbin/escalator", "/lib/systemd/systemd", "--", "--system", "--unit=multi-user.target"]
